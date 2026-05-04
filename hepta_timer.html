@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>HEPTA Workshop Timer</title>
+<style>
+    :root {
+        --bg: #07111f;
+        --text: #f5f7fb;
+        --muted: #aeb7c5;
+        --accent: #73d2ff;
+        --warn: #ffd166;
+        --danger: #ff355e;
+        --ok: #7cffb2;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at top left, #12375a, var(--bg) 55%);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        overflow: hidden;
+    }
+
+    /* left settings panel */
+    #settingsPanel {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        bottom: 16px;
+        width: 320px;
+        z-index: 50;
+        padding: 22px;
+        overflow-y: auto;
+        background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06));
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 24px;
+        box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+        transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+
+    body.panel-closed #settingsPanel {
+        transform: translateX(calc(-100% - 28px));
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #panelToggleButton {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 100;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        padding: 0;
+        font-size: 22px;
+        background: rgba(3, 10, 22, 0.78);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.24);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 34px rgba(0,0,0,0.38);
+    }
+
+    body:not(.panel-closed) #panelToggleButton {
+        left: 352px;
+    }
+
+    .main {
+        height: 100vh;
+        padding: 16px 16px 16px 352px;
+        display: grid;
+        grid-template-columns: 1fr 440px;
+        gap: 16px;
+        transition: padding-left 0.22s ease;
+    }
+
+    body.panel-closed .main {
+        padding-left: 16px;
+    }
+
+    body.timer-only .main {
+        grid-template-columns: 1fr;
+    }
+
+    .pdf-area, .timer-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+        border: 1px solid rgba(255,255,255,0.16);
+        border-radius: 24px;
+        box-shadow: 0 18px 60px rgba(0,0,0,0.28);
+        min-height: 0;
+    }
+
+    body.timer-only .pdf-area {
+        display: none;
+    }
+
+    .pdf-area {
+        overflow: hidden;
+        position: relative;
+    }
+
+    #pdfFrame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #222;
+        display: none;
+    }
+
+    .no-pdf {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: var(--muted);
+        font-size: 25px;
+        line-height: 1.6;
+        padding: 24px;
+    }
+
+    .timer-card {
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+    }
+
+    body.timer-only .timer-card {
+        text-align: center;
+        align-items: center;
+    }
+
+    .timer-content {
+        width: 100%;
+    }
+
+    body.timer-only .timer-content {
+        width: min(1100px, 92vw);
+    }
+
+    .session {
+        font-size: 26px;
+        color: var(--muted);
+        margin-bottom: 10px;
+        word-break: break-word;
+    }
+
+    body.timer-only .session {
+        font-size: clamp(30px, 4vw, 60px);
+    }
+
+    .label {
+        font-size: 18px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+
+    body.timer-only .label {
+        font-size: clamp(18px, 2vw, 28px);
+    }
+
+    .time {
+        font-size: 126px;
+        font-weight: 850;
+        letter-spacing: -0.07em;
+        line-height: 1.0;
+        margin: 22px 0 18px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    body.timer-only .time {
+        font-size: clamp(150px, 22vw, 330px);
+        margin: 30px 0;
+    }
+
+    .status {
+        font-size: 30px;
+        min-height: 42px;
+        color: var(--ok);
+        font-weight: 700;
+    }
+
+    body.timer-only .status {
+        font-size: clamp(32px, 4vw, 58px);
+    }
+
+    .bar-wrap {
+        width: 100%;
+        height: 30px;
+        background: rgba(255,255,255,0.12);
+        border-radius: 999px;
+        overflow: hidden;
+        margin: 28px 0;
+    }
+
+    body.timer-only .bar-wrap {
+        height: 44px;
+        margin: 42px auto;
+    }
+
+    .bar {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--ok), var(--accent));
+        border-radius: 999px;
+        transition: width 0.25s linear, background 0.25s linear;
+    }
+
+    #settingsPanel h1 {
+        font-size: 25px;
+        margin: 0 0 8px;
+    }
+
+    #settingsPanel p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    label.section-label {
+        display: block;
+        color: var(--muted);
+        margin-top: 18px;
+        margin-bottom: 6px;
+        font-weight: 800;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(255,255,255,0.10);
+        color: white;
+        font-size: 16px;
+    }
+
+    option {
+        color: #111;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    button {
+        border: none;
+        border-radius: 16px;
+        padding: 13px 14px;
+        font-size: 16px;
+        font-weight: 800;
+        color: #06101e;
+        background: var(--accent);
+        cursor: pointer;
+    }
+
+    button.secondary {
+        background: rgba(255,255,255,0.16);
+        color: var(--text);
+    }
+
+    button.danger {
+        background: var(--danger);
+        color: white;
+    }
+
+    button.alarm {
+        background: #ffcc00;
+        color: #1a1200;
+        grid-column: 1 / -1;
+        font-size: 20px;
+    }
+
+    .alarm-active {
+        animation: alarmButtonPulse 0.7s step-end infinite;
+    }
+
+    @keyframes alarmButtonPulse {
+        50% { filter: brightness(1.45); }
+    }
+
+    .panel-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .panel-wide {
+        grid-column: 1 / -1;
+    }
+
+    .radio-box {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .radio-box label {
+        color: var(--text);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .radio-box input {
+        width: auto;
+    }
+
+    .blink {
+        animation: blink 0.55s step-end infinite;
+    }
+
+    .danger-bg {
+        animation: dangerPulse 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+        50% { opacity: 0.25; }
+    }
+
+    @keyframes dangerPulse {
+        50% { background: radial-gradient(circle at top left, #5c1020, #1b0610 60%); }
+    }
+
+    @media (max-width: 1000px) {
+        html, body {
+            overflow: auto;
+        }
+
+        #settingsPanel {
+            width: calc(100vw - 32px);
+            right: 16px;
+        }
+
+        body:not(.panel-closed) #panelToggleButton {
+            left: auto;
+            right: 28px;
+        }
+
+        .main {
+            height: auto;
+            min-height: 100vh;
+            padding: 80px 16px 16px 16px;
+            grid-template-columns: 1fr;
+        }
+
+        body.panel-closed .main {
+            padding-left: 16px;
+        }
+
+        .pdf-area {
+            min-height: 500px;
+        }
+
+        .time {
+            font-size: 110px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<button id="panelToggleButton" title="Show / Hide Settings Panel" onclick="togglePanel()">☰</button>
+
+<aside id="settingsPanel">
+    <h1>⏱️ HEPTA Timer</h1>
+    <p>設定・スタート・停止・表示切替はすべてここに集約しています。</p>
+
+    <label class="section-label">Session title</label>
+    <input id="titleInput" type="text" value="Hands-on Activity" oninput="applySettings()">
+
+    <label class="section-label">Preset</label>
+    <select id="presetInput" onchange="applyPreset()">
+        <option value="custom">Custom</option>
+        <option value="30">30 sec</option>
+        <option value="60">1 min</option>
+        <option value="180">3 min</option>
+        <option value="300">5 min</option>
+        <option value="600">10 min</option>
+        <option value="900" selected>15 min</option>
+        <option value="1200">20 min</option>
+        <option value="1800">30 min</option>
+        <option value="2700">45 min</option>
+        <option value="3600">60 min</option>
+    </select>
+
+    <div class="row">
+        <div>
+            <label class="section-label">Minutes</label>
+            <input id="minutesInput" type="number" min="0" max="300" value="15" onchange="applySettings()">
+        </div>
+        <div>
+            <label class="section-label">Seconds</label>
+            <input id="secondsInput" type="number" min="0" max="59" value="0" onchange="applySettings()">
+        </div>
+    </div>
+
+    <div class="row">
+        <div>
+            <label class="section-label">Warning min</label>
+            <input id="warningMinutesInput" type="number" min="0" max="60" value="1" onchange="applySettings()">
+        </div>
+        <div>
+            <label class="section-label">Warning sec</label>
+            <input id="warningSecondsInput" type="number" min="0" max="59" value="0" onchange="applySettings()">
+        </div>
+    </div>
+
+    <label class="section-label">PDF / Slide PDF</label>
+    <input id="pdfInput" type="file" accept="application/pdf" onchange="loadPdf(event)">
+
+    <label class="section-label">Timer Control</label>
+    <div class="panel-buttons">
+        <button onclick="startTimer()">Start</button>
+        <button class="secondary" onclick="pauseTimer()">Pause</button>
+        <button class="secondary" onclick="resumeTimer()">Resume</button>
+        <button class="danger" onclick="resetTimer()">Reset</button>
+        <button id="stopAlarmButtonPanel" class="alarm panel-wide" onclick="stopAlarm()">Stop Alarm</button>
+    </div>
+
+    <label class="section-label">Quick Adjust</label>
+    <div class="panel-buttons">
+        <button class="secondary" onclick="addSeconds(-300)">-5 min</button>
+        <button class="secondary" onclick="addSeconds(-60)">-1 min</button>
+        <button class="secondary" onclick="addSeconds(60)">+1 min</button>
+        <button class="secondary" onclick="addSeconds(300)">+5 min</button>
+    </div>
+
+    <label class="section-label">Display Mode</label>
+    <div class="radio-box">
+        <label><input type="radio" name="displayMode" value="pdf" checked onchange="setDisplayMode(this.value)"> PDF Show</label>
+        <label><input type="radio" name="displayMode" value="timer" onchange="setDisplayMode(this.value)"> Timer Only</label>
+    </div>
+
+    <label class="section-label">Fullscreen</label>
+    <div class="radio-box">
+        <label><input type="radio" name="fullscreenMode" value="off" checked onchange="setFullscreenMode(this.value)"> Off</label>
+        <label><input type="radio" name="fullscreenMode" value="on" onchange="setFullscreenMode(this.value)"> On</label>
+    </div>
+
+    <label class="section-label">Settings Panel</label>
+    <button class="secondary panel-wide" onclick="togglePanel()">Hide Settings Panel</button>
+
+    <p>
+        設定パネルを隠した後は、左上の ☰ で再表示できます。<br>
+        PowerPointはPDFに変換してから読み込んでください。
+    </p>
+</aside>
+
+<main class="main">
+    <section class="pdf-area">
+        <iframe id="pdfFrame" title="PDF Viewer"></iframe>
+        <div id="pdfPlaceholder" class="no-pdf">
+            PDF is not loaded.<br>
+            Upload a PDF from the settings panel.<br><br>
+            PowerPoint → PDF is recommended.
+        </div>
+    </section>
+
+    <section class="timer-card">
+        <div class="timer-content">
+            <div id="sessionTitle" class="session">Hands-on Activity</div>
+            <div class="label">Time Remaining</div>
+            <div id="time" class="time">15:00</div>
+            <div id="status" class="status">Ready</div>
+            <div class="bar-wrap">
+                <div id="bar" class="bar"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    let initialSeconds = 900;
+    let remainingSeconds = initialSeconds;
+    let warningSeconds = 60;
+    let timerId = null;
+    let running = false;
+    let warningPlayed = false;
+    let audioCtx = null;
+    let alarmIntervalId = null;
+    let alarmRunning = false;
+
+    function togglePanel() {
+        document.body.classList.toggle("panel-closed");
+    }
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function formatTime(seconds) {
+        seconds = Math.max(0, seconds);
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+
+        if (h > 0) {
+            return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+        }
+        return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function applyPreset() {
+        const value = document.getElementById("presetInput").value;
+        if (value !== "custom") {
+            const sec = parseInt(value);
+            document.getElementById("minutesInput").value = Math.floor(sec / 60);
+            document.getElementById("secondsInput").value = sec % 60;
+        }
+        applySettings();
+    }
+
+    function applySettings() {
+        const min = parseInt(document.getElementById("minutesInput").value || "0");
+        const sec = parseInt(document.getElementById("secondsInput").value || "0");
+        const wMin = parseInt(document.getElementById("warningMinutesInput").value || "0");
+        const wSec = parseInt(document.getElementById("warningSecondsInput").value || "0");
+        const title = document.getElementById("titleInput").value || "HEPTA Timer";
+
+        const total = Math.max(1, min * 60 + sec);
+        warningSeconds = Math.max(0, wMin * 60 + wSec);
+
+        if (!running && !alarmRunning) {
+            initialSeconds = total;
+            remainingSeconds = total;
+        }
+
+        document.getElementById("sessionTitle").textContent = title;
+        updateDisplay();
+    }
+
+    function playTone(freq, start, dur, volume=1.0) {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "square";
+        osc.frequency.value = freq;
+
+        const t0 = ctx.currentTime + start;
+        const t1 = t0 + dur;
+
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t1);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t0);
+        osc.stop(t1 + 0.02);
+    }
+
+    function playWarningSound() {
+        playTone(900, 0.00, 0.12, 0.55);
+        playTone(900, 0.20, 0.12, 0.55);
+    }
+
+    function playAlarmPattern() {
+        playTone(1150, 0.00, 0.14, 1.00);
+        playTone(1150, 0.20, 0.14, 1.00);
+        playTone(1150, 0.40, 0.14, 1.00);
+        playTone(1150, 0.60, 0.14, 1.00);
+        playTone(1450, 0.90, 0.20, 1.00);
+        playTone(1450, 1.18, 0.20, 1.00);
+    }
+
+    function startAlarmLoop() {
+        if (alarmRunning) return;
+
+        alarmRunning = true;
+        document.getElementById("stopAlarmButtonPanel").classList.add("alarm-active");
+
+        playAlarmPattern();
+        alarmIntervalId = setInterval(playAlarmPattern, 1800);
+    }
+
+    function stopAlarm() {
+        alarmRunning = false;
+        if (alarmIntervalId !== null) {
+            clearInterval(alarmIntervalId);
+            alarmIntervalId = null;
+        }
+        document.getElementById("stopAlarmButtonPanel").classList.remove("alarm-active");
+    }
+
+    function updateDisplay() {
+        const timeEl = document.getElementById("time");
+        const statusEl = document.getElementById("status");
+        const barEl = document.getElementById("bar");
+
+        timeEl.textContent = formatTime(remainingSeconds);
+
+        const ratio = initialSeconds > 0 ? remainingSeconds / initialSeconds : 0;
+        barEl.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+
+        timeEl.classList.remove("blink");
+        document.body.classList.remove("danger-bg");
+
+        if (remainingSeconds <= 0) {
+            statusEl.textContent = "TIME UP!";
+            statusEl.style.color = "var(--danger)";
+            barEl.style.background = "var(--danger)";
+            timeEl.classList.add("blink");
+            document.body.classList.add("danger-bg");
+        } else if (remainingSeconds <= 60) {
+            statusEl.textContent = "Almost there";
+            statusEl.style.color = "var(--danger)";
+            barEl.style.background = "var(--danger)";
+        } else if (remainingSeconds <= 5 * 60) {
+            statusEl.textContent = "Final minutes";
+            statusEl.style.color = "var(--warn)";
+            barEl.style.background = "var(--warn)";
+        } else if (running) {
+            statusEl.textContent = "Running";
+            statusEl.style.color = "var(--ok)";
+            barEl.style.background = "linear-gradient(90deg, var(--ok), var(--accent))";
+        } else {
+            statusEl.textContent = "Ready";
+            statusEl.style.color = "var(--ok)";
+            barEl.style.background = "linear-gradient(90deg, var(--ok), var(--accent))";
+        }
+    }
+
+    function tick() {
+        if (!running) return;
+
+        remainingSeconds -= 1;
+
+        if (
+            warningSeconds > 0 &&
+            remainingSeconds === warningSeconds &&
+            !warningPlayed
+        ) {
+            warningPlayed = true;
+            playWarningSound();
+        }
+
+        if (remainingSeconds <= 0) {
+            remainingSeconds = 0;
+            running = false;
+            clearInterval(timerId);
+            timerId = null;
+            startAlarmLoop();
+        }
+
+        updateDisplay();
+    }
+
+    function startTimer() {
+        getAudioContext();
+        stopAlarm();
+        if (timerId !== null) clearInterval(timerId);
+        running = true;
+        warningPlayed = false;
+        timerId = setInterval(tick, 1000);
+        updateDisplay();
+    }
+
+    function pauseTimer() {
+        running = false;
+        document.getElementById("status").textContent = "Paused";
+    }
+
+    function resumeTimer() {
+        getAudioContext();
+        if (remainingSeconds <= 0) return;
+        stopAlarm();
+        running = true;
+        if (timerId === null) {
+            timerId = setInterval(tick, 1000);
+        }
+        updateDisplay();
+    }
+
+    function resetTimer() {
+        stopAlarm();
+        running = false;
+        if (timerId !== null) clearInterval(timerId);
+        timerId = null;
+        warningPlayed = false;
+        const min = parseInt(document.getElementById("minutesInput").value || "0");
+        const sec = parseInt(document.getElementById("secondsInput").value || "0");
+        initialSeconds = Math.max(1, min * 60 + sec);
+        remainingSeconds = initialSeconds;
+        updateDisplay();
+    }
+
+    function addSeconds(sec) {
+        stopAlarm();
+        remainingSeconds = Math.max(0, remainingSeconds + sec);
+        initialSeconds = Math.max(remainingSeconds, initialSeconds + sec);
+        updateDisplay();
+    }
+
+    function setDisplayMode(mode) {
+        document.body.classList.toggle("timer-only", mode === "timer");
+    }
+
+    function enterFullscreen() {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+    }
+
+    function exitFullscreen() {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    }
+
+    function setFullscreenMode(mode) {
+        if (mode === "on") {
+            enterFullscreen();
+        } else {
+            exitFullscreen();
+        }
+    }
+
+    function syncFullscreenRadio() {
+        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const onRadio = document.querySelector('input[name="fullscreenMode"][value="on"]');
+        const offRadio = document.querySelector('input[name="fullscreenMode"][value="off"]');
+        if (onRadio && offRadio) {
+            onRadio.checked = isFull;
+            offRadio.checked = !isFull;
+        }
+    }
+
+    document.addEventListener("fullscreenchange", syncFullscreenRadio);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenRadio);
+
+    function loadPdf(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileUrl = URL.createObjectURL(file);
+        const frame = document.getElementById("pdfFrame");
+        const placeholder = document.getElementById("pdfPlaceholder");
+
+        frame.src = fileUrl;
+        frame.style.display = "block";
+        placeholder.style.display = "none";
+    }
+
+    applySettings();
+</script>
+</body>
+</html>
