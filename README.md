@@ -1,9 +1,8 @@
-# hepta-ws-timer
 # ⏱️ HEPTA Workshop Timer
 
-**HEPTA Workshop Timer** is a simple, stylish, browser-based timer tool designed for hands-on workshops, lectures, demonstrations, and satellite education activities.
+**HEPTA Workshop Timer** は、HEPTA-SAT などのハンズオン型ワークショップや講義、演習で使うことを想定した、**ブラウザで動くシンプルで見やすいタイマーアプリ**です。
 
-It combines a **large countdown timer** with an optional **PDF slide viewer**, making it useful for workshop facilitation, presentation sessions, group activities, and time-managed exercises.
+PDFスライドを表示しながらタイマーを使うことも、タイマーだけを大きく表示することもできます。
 
 ![Status](https://img.shields.io/badge/status-ready-brightgreen)
 ![Made with](https://img.shields.io/badge/made%20with-HTML%20%2F%20CSS%20%2F%20JavaScript-blue)
@@ -11,98 +10,132 @@ It combines a **large countdown timer** with an optional **PDF slide viewer**, m
 
 ---
 
-## ✨ Features
+## 🚀 すぐに使えます
 
-### 🕒 Large Countdown Timer
-- Big, easy-to-read countdown display
-- Supports minutes and seconds
-- Preset timer options from **30 seconds to 60 minutes**
-- Quick time adjustment buttons: `-5 min`, `-1 min`, `+1 min`, `+5 min`
+このアプリは **HTMLファイルをダウンロードして、ブラウザで開くだけで使用できます。**
 
-### 📄 PDF Show Mode
-- Upload and display a PDF directly in the browser
-- Recommended for showing slides converted from PowerPoint
-- Timer stays visible beside the PDF for smooth workshop operation
+サーバーの準備やインストールは不要です。
 
-### 🎯 Timer Only Mode
-- Focused full-screen timer display
-- Large centered numbers for visibility from a distance
-- Ideal for group work, countdowns, breaks, and hands-on activities
-
-### 🔔 Warning & Alarm
-- Custom warning time setting
-- Warning sound before time is up
-- Repeating alarm when the timer reaches zero
-- Dedicated **Stop Alarm** button
-
-### 🧭 Clean Settings Panel
-- All controls are gathered in the left-side settings panel
-- Start, pause, resume, reset, display mode, fullscreen, and PDF upload are all in one place
-- Panel can be hidden and reopened with the `☰` button
-
-### 🌌 Visual Design
-- Dark glassmorphism-style interface
-- Gradient background
-- Large progress bar
-- Warning and time-up visual effects
-- Presentation-friendly appearance
+```text
+hepta_timer.html をダウンロード
+↓
+Chrome / Edge / Safari などのブラウザで開く
+↓
+すぐにタイマーとして使用可能
+```
 
 ---
 
-## 🚀 How to Use
+## ✨ 主な機能
 
-1. Open `hepta_timer.html` in a web browser.
-2. Set the session title.
-3. Choose a preset time or enter your own minutes and seconds.
-4. Set the warning time.
-5. Upload a PDF if you want to use the slide display.
-6. Choose either:
+### 🕒 大きく見やすいカウントダウンタイマー
+
+- 残り時間を大きく表示
+- 分・秒を自由に設定可能
+- 30秒〜60分までのプリセットを搭載
+- `-5 min`、`-1 min`、`+1 min`、`+5 min` のクイック調整に対応
+
+### 📄 PDF表示モード
+
+- PDFを読み込んで、画面内に表示可能
+- PowerPointをPDFに変換して読み込むことで、スライド表示とタイマーを同時に使用可能
+- ワークショップや講義中の進行管理に便利
+
+### 🎯 タイマーのみ表示モード
+
+- タイマーだけを大きく中央に表示
+- 遠くからでも見やすいデザイン
+- グループワーク、休憩時間、発表練習、演習時間の管理に最適
+
+### 🔔 警告音・終了アラーム
+
+- 残り時間が指定した警告時間になると警告音を再生
+- 時間終了時にはアラームを繰り返し再生
+- **Stop Alarm** ボタンでアラーム停止可能
+
+### 🧭 操作しやすい設定パネル
+
+- タイマー設定、開始、停止、リセット、PDF読み込み、表示切替を左側パネルに集約
+- 設定パネルは非表示にでき、左上の `☰` ボタンから再表示可能
+- 発表中や演習中に画面をすっきり見せられます
+
+### 🌌 見栄えのよいデザイン
+
+- ダークテーマ
+- ガラス風の半透明パネル
+- グラデーション背景
+- 大きな進捗バー
+- 警告時・終了時の視覚効果
+
+---
+
+## 🖥️ 使い方
+
+1. `hepta_timer.html` をダウンロードします。
+2. HTMLファイルをブラウザで開きます。
+3. セッションタイトルを入力します。
+4. プリセット時間を選ぶか、分・秒を直接設定します。
+5. 必要に応じて警告時間を設定します。
+6. スライドを表示したい場合はPDFを読み込みます。
+7. 表示モードを選びます。
    - **PDF Show**
    - **Timer Only**
-7. Press **Start**.
-8. When the timer ends, press **Stop Alarm** to stop the sound.
+8. **Start** を押してタイマーを開始します。
+9. 時間終了後は **Stop Alarm** を押してアラームを止めます。
 
 ---
 
-## 🖥️ Display Modes
+## 📄 PDF Show モード
 
-### PDF Show
+PDFスライドとタイマーを同じ画面で表示できます。
 
-Use this mode when you want to show slides and a timer together.
+おすすめの用途：
 
-Recommended for:
+- ワークショップ講義
+- ハンズオン演習
+- グループ活動
+- 発表練習
+- デモンストレーション
 
-- Workshop lectures
-- Hands-on activity instructions
-- Group exercises
-- Demonstrations
+PowerPointを使う場合は、以下の流れがおすすめです。
 
-### Timer Only
-
-Use this mode when you want a clean, highly visible countdown timer.
-
-Recommended for:
-
-- Break time
-- Discussion time
-- Mission activity countdowns
-- Presentation practice
+```text
+PowerPoint
+↓
+PDFとして保存
+↓
+HEPTA Workshop Timer に読み込み
+```
 
 ---
 
-## 📦 File Structure
+## ⏱️ Timer Only モード
+
+タイマーだけを大きく表示するモードです。
+
+おすすめの用途：
+
+- 休憩時間
+- 作業時間
+- ディスカッション時間
+- 発表練習
+- ミッション演習のカウントダウン
+
+---
+
+## 📦 ファイル構成
 
 ```text
 hepta_timer.html
 README.md
 ```
 
-This project is intentionally lightweight.  
-No external libraries are required.
+外部ライブラリは不要です。  
+HTMLファイル単体で動作します。
 
 ---
 
-## 🛠️ Built With
+## 🛠️ 使用技術
 
 - HTML
 - CSS
@@ -111,60 +144,43 @@ No external libraries are required.
 
 ---
 
-## 🎓 Intended Use
+## 🎓 想定している利用場面
 
-This timer was designed for HEPTA-SAT and hands-on satellite education workshops.
+このタイマーは、HEPTA-SAT や人工衛星教育、宇宙工学ワークショップなどのハンズオン活動で使うことを想定しています。
 
-It is especially useful when participants need to understand time constraints during practical activities such as:
+特に、以下のような活動に向いています。
 
-- Satellite system design exercises
-- Mission planning
-- Group discussions
-- Hardware demonstrations
-- Data analysis sessions
-- Presentation preparation
-
----
-
-## 💡 Recommended Workflow
-
-For PowerPoint presentations:
-
-```text
-PowerPoint → Export as PDF → Upload PDF into HEPTA Workshop Timer
-```
-
-This allows the slides and timer to be displayed together in a single browser window.
+- 衛星システム設計演習
+- ミッション設計演習
+- グループディスカッション
+- ハードウェア実習
+- データ解析演習
+- 発表準備
+- ワークショップ全体の時間管理
 
 ---
 
-## 🔊 Notes
+## 💡 コンセプト
 
-- Browser audio may require the user to press **Start** before sounds can play.
-- Fullscreen mode depends on browser permissions.
-- PDF display uses the browser's built-in PDF viewer.
+ワークショップで必要なのは、単なるタイマーだけではありません。
 
----
+参加者が見やすく、講師が操作しやすく、スライド表示にも使えて、活動の雰囲気を邪魔しないツールが必要です。
 
-## 🌟 Concept
-
-Workshops often need more than just a timer.
-
-They need a tool that is:
-
-- easy to operate,
-- visible from the back of the room,
-- suitable for presentations,
-- not distracting,
-- and visually polished.
-
-**HEPTA Workshop Timer** was created to support smooth, time-managed, and engaging learning experiences.
+**HEPTA Workshop Timer** は、ハンズオン教育をよりスムーズに、より見やすく進行するためのタイマーです。
 
 ---
 
-## 📜 License
+## 🔊 注意事項
 
-This project can be modified and used for educational and workshop purposes.
+- ブラウザの仕様により、音を鳴らすには一度 **Start** ボタンを押す必要がある場合があります。
+- フルスクリーン表示はブラウザの許可が必要です。
+- PDF表示にはブラウザ内蔵のPDFビューアを使用します。
+
+---
+
+## 📜 ライセンス
+
+教育目的・ワークショップ目的で自由に改変・利用できます。
 
 ---
 
