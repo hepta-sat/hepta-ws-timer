@@ -12,6 +12,10 @@ PDFスライドを表示しながらタイマーを使うことも、タイマ�
 
 ## 🚀 すぐに使えます
 
+**[ブラウザで HEPTA Workshop Timer を開く](https://hepta-sat.github.io/hepta-ws-timer/)**
+
+GitHub Pagesで公開しているため、ダウンロードせずにそのまま使用できます。
+
 このアプリは **HTMLファイルをダウンロードして、ブラウザで開くだけで使用できます。**
 
 サーバーの準備やインストールは不要です。
@@ -126,12 +130,19 @@ HEPTA Workshop Timer に読み込み
 ## 📦 ファイル構成
 
 ```text
+index.html        # GitHub Pagesの入口
 hepta_timer.html
 README.md
+.nojekyll         # 静的ファイルをそのまま公開
 ```
 
 外部ライブラリは不要です。  
 HTMLファイル単体で動作します。
+
+### GitHub Pagesでの公開
+
+`master`ブランチのルート（`/`）を公開元に設定しています。
+`master`に変更をpushすると、GitHub Pagesのサイトにも自動で反映されます。
 
 ---
 
